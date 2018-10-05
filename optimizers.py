@@ -106,8 +106,12 @@ class GAOptimizer(object):
             for ngen in range(num_generations):
                 population_iter.clear()
                 if pool is not None:
-                    pool.map(self.pop_type.get_fitness, self.population)
-                    self.population = [x for _,x in sorted(zip(fitness_values, self.population))]
+                    fitness_values = pool.map(self.pop_type.get_fitness, self.population)
+                    self.population = [x for _,x in sorted(zip(fitness_values, self.population), key=lambda t:t[0])]
+                    if ngen == 0:
+                        population_iter.update(self.pop_count)
+                    else:
+                        population_iter.update(self.pop_count - self.surviving_count)
                 else:
                     for idx,individual in enumerate((i for i,v in zip(self.population, population_mask) if v)):
                         individual.get_fitness()
@@ -120,12 +124,13 @@ class GAOptimizer(object):
                     population_iter.write("In decreasing order of optimality, the current population is\n")
                     for individual in self.population:
                         population_iter.write(str(individual))
-                for i in range(self.surviving_count, self.pop_count):
-                    parent1,parent2 = tuple(np.random.choice(len(self.population), 2))
-                    parent1_genome,parent2_genome = self.population[parent1].get_parameters(), self.population[parent2].get_parameters()
-                    self.genome_selectors = dict((pname, RandomGenerator(pgen.return_type, (parent1_genome[pname], parent2_genome[pname]), True)) for pname, pgen in self._gens.items())
-                    self.population[i:i+1] = self._create_population(self.genome_selectors, 1)
-                    population_mask[i] = True
+                if (ngen < num_generations - 1):
+                    for i in range(self.surviving_count, self.pop_count):
+                        parent1,parent2 = tuple(np.random.choice(len(self.population), 2))
+                        parent1_genome,parent2_genome = self.population[parent1].get_parameters(), self.population[parent2].get_parameters()
+                        self.genome_selectors = dict((pname, RandomGenerator(pgen.return_type, (parent1_genome[pname], parent2_genome[pname]), True)) for pname, pgen in self._gens.items())
+                        self.population[i:i+1] = self._create_population(self.genome_selectors, 1)
+                        population_mask[i] = True
                 gc.collect()
             
     def _create_population(self, pop_gens, num_gens):
