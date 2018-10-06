@@ -114,3 +114,6 @@ dmypy.json
 
 # nohup outputs
 nohup.out
+
+# temporary outputs
+temp/
