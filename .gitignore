@@ -120,3 +120,6 @@ temp/
 
 # Dataset Directory
 data/
+
+# Main Competitive Code Directory
+main/
