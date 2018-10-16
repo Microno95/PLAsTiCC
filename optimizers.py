@@ -33,6 +33,24 @@ class RandomGenerator(object):
     
     def __next__(self):
         return self._gen()
+
+    
+class ConstantGenerator(RandomGenerator):
+    def __init__(self, return_type, return_val):
+        self.return_type = return_type
+        self.return_val = return_val
+        def _gen():
+            return self.return_type(self.return_val)
+        self._gen = _gen
+    
+    def __str__(self):
+        return "{} with type: {} and return val: {}".format(self.__class__.__name__, self.return_type, self.return_val)
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        return self._gen()
     
 class Individual(object):
     parameter_names = ['current']
