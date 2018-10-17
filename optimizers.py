@@ -52,6 +52,14 @@ class ConstantGenerator(RandomGenerator):
     def __next__(self):
         return self._gen()
     
+class LogGenerator(opt.RandomGenerator):
+    def __init__(self, return_range, return_base):
+        self.return_range = return_range
+        self.return_base = return_base
+        def _gen():
+            return np.power(return_base, np.random.random() * (self.return_range[1] - self.return_range[0]) + self.return_range[0])
+        self._gen = _gen
+    
 class Individual(object):
     parameter_names = ['current']
     
